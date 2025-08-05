@@ -1,112 +1,122 @@
-import { useEffect, useRef } from 'react'
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 
-export const useSocket = () => {
-  const socketRef = useRef<Socket | null>(null)
+interface Message {
+  id: string
+  content: string
+  senderId: string
+  receiverId: string
+  senderName: string
+  timestamp: string
+}
+
+interface MockSocket {
+  socket: null
+  connected: boolean
+  onNewMessage: (callback: (message: Message) => void) => void
+  sendMessage: (roomId: string, message: Message) => void
+  joinRoom: (roomId: string) => void
+  removeListeners: () => void
+}
+
+interface RealSocket {
+  socket: Socket | null
+  connected: boolean
+  onNewMessage: (callback: (message: Message) => void) => void
+  sendMessage: (roomId: string, message: Message) => void
+  joinRoom: (roomId: string) => void
+  removeListeners: () => void
+}
+
+type SocketHook = MockSocket | RealSocket
+
+export function useSocket(): SocketHook {
+  const [socket, setSocket] = useState<Socket | null>(null)
+  const [connected, setConnected] = useState(false)
+
+  // Production ortamında Socket.io'yu devre dışı bırak
+  const isProduction = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
-    // Initialize socket connection
-    if (!socketRef.current) {
-      console.log('🔄 Initializing Socket.IO connection...')
-      
-      // First, initialize the socket.io server
-      fetch('/api/socketio')
-        .then(res => res.json())
-        .then(data => {
-          console.log('📡 Socket.IO server status:', data)
-        })
-        .catch(console.error)
-      
-      socketRef.current = io({
-        path: '/api/socketio',
-        transports: ['websocket', 'polling'],
-        timeout: 20000, // 20 saniye timeout
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-      })
-
-      socketRef.current.on('connect', () => {
-        console.log('✅ Connected to Socket.io server:', socketRef.current?.id)
-      })
-
-      socketRef.current.on('disconnect', (reason) => {
-        console.log('❌ Disconnected from Socket.io server:', reason)
-      })
-
-      socketRef.current.on('connect_error', (error) => {
-        console.error('🚨 Socket connection error:', error)
-      })
-
-      socketRef.current.on('reconnect', (attemptNumber) => {
-        console.log('🔄 Reconnected to Socket.io server, attempt:', attemptNumber)
-      })
-
-      socketRef.current.on('reconnect_error', (error) => {
-        console.error('🚨 Socket reconnection error:', error)
-      })
+    if (isProduction) {
+      // Production'da socket bağlantısı yapma
+      console.log('🚫 Socket.io production ortamında devre dışı')
+      return
     }
+
+    // Development ortamında normal socket bağlantısı
+    const socketInstance = io({
+      path: '/api/socketio',
+      addTrailingSlash: false,
+    })
+
+    socketInstance.on('connect', () => {
+      console.log('✅ Socket bağlandı:', socketInstance.id)
+      setConnected(true)
+    })
+
+    socketInstance.on('disconnect', () => {
+      console.log('❌ Socket bağlantısı kesildi')
+      setConnected(false)
+    })
+
+    socketInstance.on('connect_error', (error) => {
+      console.error('Socket bağlantı hatası:', error)
+      setConnected(false)
+    })
+
+    setSocket(socketInstance)
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect()
-        socketRef.current = null
-      }
+      socketInstance.disconnect()
     }
-  }, [])
+  }, [isProduction])
 
-  const joinRoom = (roomId: string) => {
-    if (socketRef.current) {
-      socketRef.current.emit('join-room', roomId)
-    }
-  }
+  const onNewMessage = useCallback((callback: (message: Message) => void) => {
+    if (isProduction || !socket) return
 
-  const leaveRoom = (roomId: string) => {
-    if (socketRef.current) {
-      socketRef.current.emit('leave-room', roomId)
-    }
-  }
+    socket.on('newMessage', callback)
+  }, [socket, isProduction])
 
-  const sendMessage = (roomId: string, message: any) => {
-    if (socketRef.current) {
-      socketRef.current.emit('send-message', { roomId, message })
-    }
-  }
+  const sendMessage = useCallback((roomId: string, message: Message) => {
+    if (isProduction || !socket) return
 
-  const onNewMessage = (callback: (message: any) => void) => {
-    if (socketRef.current) {
-      socketRef.current.on('new-message', callback)
-    }
-  }
+    socket.emit('sendMessage', { roomId, message })
+  }, [socket, isProduction])
 
-  const setTyping = (roomId: string, isTyping: boolean, userName: string) => {
-    if (socketRef.current) {
-      socketRef.current.emit('typing', { roomId, isTyping, userName })
-    }
-  }
+  const joinRoom = useCallback((roomId: string) => {
+    if (isProduction || !socket) return
 
-  const onUserTyping = (callback: (data: { roomId: string; isTyping: boolean; userName: string }) => void) => {
-    if (socketRef.current) {
-      socketRef.current.on('user-typing', callback)
+    socket.emit('joinRoom', roomId)
+  }, [socket, isProduction])
+
+  const removeListeners = useCallback(() => {
+    if (isProduction || !socket) return
+
+    socket.off('newMessage')
+  }, [socket, isProduction])
+
+  if (isProduction) {
+    // Production için mock socket döndür
+    return {
+      socket: null,
+      connected: false,
+      onNewMessage: () => {},
+      sendMessage: () => {},
+      joinRoom: () => {},
+      removeListeners: () => {}
     }
   }
 
-  const removeListeners = () => {
-    if (socketRef.current) {
-      socketRef.current.off('new-message')
-      socketRef.current.off('user-typing')
-    }
-  }
-
+  // Development için gerçek socket döndür
   return {
-    socket: socketRef.current,
-    connected: socketRef.current?.connected || false,
-    joinRoom,
-    leaveRoom,
-    sendMessage,
+    socket,
+    connected,
     onNewMessage,
-    setTyping,
-    onUserTyping,
+    sendMessage,
+    joinRoom,
     removeListeners
   }
 }

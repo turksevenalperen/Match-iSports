@@ -41,6 +41,35 @@ export default function ChatPage() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Production'da polling için interval
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Kullanıcıları ve mesajları yükle
+  const refreshData = async () => {
+    if (!session?.user?.id) return
+
+    try {
+      // Kullanıcıları yenile
+      const usersResponse = await fetch('/api/users')
+      if (usersResponse.ok) {
+        const userData = await usersResponse.json()
+        setUsers(userData.filter((user: User) => user.id !== session?.user?.id))
+      }
+
+      // Seçili kullanıcı varsa mesajları yenile
+      if (selectedUser) {
+        const messagesResponse = await fetch(`/api/messages?otherUserId=${selectedUser.id}`)
+        if (messagesResponse.ok) {
+          const messageData = await messagesResponse.json()
+          setMessages(messageData)
+          scrollToBottom()
+        }
+      }
+    } catch (error) {
+      console.error('Data refresh error:', error)
+    }
+  }
+
   // Kullanıcıları yükle
   useEffect(() => {
     const fetchUsers = async () => {
@@ -64,6 +93,20 @@ export default function ChatPage() {
 
     if (session?.user?.id) {
       fetchUsers()
+
+      // Production'da polling başlat
+      if (process.env.NODE_ENV === 'production') {
+        pollingIntervalRef.current = setInterval(() => {
+          refreshData()
+        }, 3000) // 3 saniyede bir yenile
+      }
+    }
+
+    // Cleanup
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+      }
     }
   }, [session])
 
