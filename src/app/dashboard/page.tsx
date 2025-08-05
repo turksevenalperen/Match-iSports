@@ -268,17 +268,17 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json()
         if (action === "ACCEPTED") {
-          toast.success("İstek Kabul Edildi! ✅", "Artık takımla sohbet edebilirsiniz.")
+          toast.success("İstek Kabul Edildi! ✅ Artık takımla sohbet edebilirsiniz.")
         } else {
-          toast.info("İstek Reddedildi 📝", "İstek başarıyla reddedildi.")
+          toast.info("İstek Reddedildi 📝 İstek başarıyla reddedildi.")
         }
         setIncomingRequests((prev) => prev.filter((req) => req.id !== requestId))
       } else {
         const errorData = await response.json()
-        toast.error("Hata Oluştu! ❌", errorData.error || "İstek işlenirken bir hata oluştu.")
+        toast.error("Hata Oluştu! ❌ " + (errorData.error || "İstek işlenirken bir hata oluştu."))
       }
     } catch (error) {
-      toast.error("Bağlantı Hatası! 🌐", "İstek işlenirken bir hata oluştu.")
+      toast.error("Bağlantı Hatası! 🌐 İstek işlenirken bir hata oluştu.")
     } finally {
       setLoadingActions((prev) => {
         const newSet = new Set(prev)
@@ -306,7 +306,7 @@ export default function DashboardPage() {
 
       if (response.ok) {
         // Başarı bildirimi
-        toast.success("İstek Gönderildi! ✅", `${targetTeamName} takımına maç isteğiniz başarıyla gönderildi.`)
+        toast.success("İstek Gönderildi! ✅ " + `${targetTeamName} takımına maç isteğiniz başarıyla gönderildi.`)
         
         // Aktivite ekle
         const newActivity = {
@@ -323,11 +323,11 @@ export default function DashboardPage() {
         
       } else {
         const error = await response.json()
-        toast.error("Hata! ❌", error.error || "İstek gönderilirken bir hata oluştu.")
+        toast.error("Hata! ❌ " + (error.error || "İstek gönderilirken bir hata oluştu."))
       }
     } catch (error) {
       console.error('Error sending request:', error)
-      toast.error("Bağlantı Hatası! 🌐", "İnternet bağlantınızı kontrol edin.")
+      toast.error("Bağlantı Hatası! 🌐 İnternet bağlantınızı kontrol edin.")
     } finally {
       setLoadingActions((prev) => {
         const newSet = new Set(prev)
@@ -349,7 +349,7 @@ export default function DashboardPage() {
       })
 
       if (response.ok) {
-        toast.info("İstek İptal Edildi ❌", `${targetTeamName} takımına gönderilen istek iptal edildi.`)
+        toast.info("İstek İptal Edildi ❌ " + `${targetTeamName} takımına gönderilen istek iptal edildi.`)
         
         // Gönderilen istekleri listeden kaldır
         setSentRequests(prev => prev.filter(req => req.id !== requestId))
@@ -366,11 +366,11 @@ export default function DashboardPage() {
         
       } else {
         const error = await response.json()
-        toast.error("Hata! ❌", error.error || "İstek iptal edilirken bir hata oluştu.")
+        toast.error("Hata! ❌ " + (error.error || "İstek iptal edilirken bir hata oluştu."))
       }
     } catch (error) {
       console.error('Error cancelling request:', error)
-      toast.error("Bağlantı Hatası! 🌐", "İnternet bağlantınızı kontrol edin.")
+      toast.error("Bağlantı Hatası! 🌐 İnternet bağlantınızı kontrol edin.")
     } finally {
       setLoadingActions((prev) => {
         const newSet = new Set(prev)

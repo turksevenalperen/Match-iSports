@@ -100,13 +100,13 @@ export default function TeamSearchPage() {
       
       if (response.ok) {
         setRequestedTeams(prev => new Set([...prev, teamId]))
-        toast.success("Maç isteği gönderildi!", "İstek başarıyla gönderildi, yanıt bekleniyor.")
+        toast.success("Maç isteği gönderildi! İstek başarıyla gönderildi, yanıt bekleniyor.")
       } else {
         const data = await response.json()
-        toast.error("İstek gönderilemedi", data.error || "Bir hata oluştu")
+        toast.error("İstek gönderilemedi: " + (data.error || "Bir hata oluştu"))
       }
     } catch (error) {
-      toast.error("Bağlantı hatası", "İnternet bağlantınızı kontrol edin")
+      toast.error("Bağlantı hatası - İnternet bağlantınızı kontrol edin")
     } finally {
       setLoadingRequests(prev => {
         const newSet = new Set(prev)
@@ -129,13 +129,13 @@ export default function TeamSearchPage() {
           newSet.delete(teamId)
           return newSet
         })
-        toast.info("İstek iptal edildi", "Maç isteği başarıyla iptal edildi")
+        toast.info("İstek iptal edildi - Maç isteği başarıyla iptal edildi")
       } else {
         const data = await response.json()
-        toast.error("İptal edilemedi", data.error || "Bir hata oluştu")
+        toast.error("İptal edilemedi: " + (data.error || "Bir hata oluştu"))
       }
     } catch (error) {
-      toast.error("Bağlantı hatası", "İnternet bağlantınızı kontrol edin")
+      toast.error("Bağlantı hatası - İnternet bağlantınızı kontrol edin")
     } finally {
       setLoadingRequests(prev => {
         const newSet = new Set(prev)

@@ -37,7 +37,7 @@ export async function GET() {
 }
 
 // Aktivite oluşturma helper fonksiyonu
-export async function createActivity(
+async function createActivity(
   userId: string,
   type: string,
   title: string,

@@ -62,7 +62,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error("Error fetching sent requests:", error)
-      toast.error("Hata", "İstekler yüklenirken bir hata oluştu.")
+      toast.error("Hata - İstekler yüklenirken bir hata oluştu.")
     } finally {
       setIsLoading(false)
     }
@@ -80,14 +80,14 @@ export default function RequestsPage() {
       })
 
       if (response.ok) {
-        toast.success("İstek İptal Edildi", "İsteğiniz başarıyla iptal edildi.")
+        toast.success("İstek İptal Edildi - İsteğiniz başarıyla iptal edildi.")
         setSentRequests((prev) => prev.filter((req) => req.id !== requestId))
       } else {
         const errorData = await response.json()
-        toast.error("Hata", errorData.error || "İstek iptal edilirken bir hata oluştu.")
+        toast.error("Hata: " + (errorData.error || "İstek iptal edilirken bir hata oluştu."))
       }
     } catch (error) {
-      toast.error("Bağlantı Hatası", "İstek iptal edilirken bir hata oluştu.")
+      toast.error("Bağlantı Hatası - İstek iptal edilirken bir hata oluştu.")
     } finally {
       setDeletingRequests((prev) => {
         const newSet = new Set(prev)

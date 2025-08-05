@@ -75,17 +75,17 @@ export default function ChatPage() {
 
       socket.socket.on('disconnect', (reason) => {
         console.log('Chat: Socket disconnected:', reason)
-        toast.error("Bağlantı Kesildi", "Mesajlaşma hizmeti geçici olarak kesintide. Yeniden bağlanıyor...")
+        toast.error("Bağlantı kesildi - Yeniden bağlanıyor...")
       })
 
       socket.socket.on('connect_error', (error) => {
         console.error('Chat: Socket connection error:', error)
-        toast.error("Bağlantı Hatası", "Mesajlaşma hizmetine bağlanılamıyor.")
+        toast.error("Mesajlaşma hizmetine bağlanılamıyor")
       })
 
       socket.socket.on('reconnect', () => {
         console.log('Chat: Socket reconnected')
-        toast.success("Bağlantı Kuruldu", "Mesajlaşma hizmeti yeniden aktif.")
+        toast.success("Mesajlaşma hizmeti yeniden aktif")
       })
     }
 

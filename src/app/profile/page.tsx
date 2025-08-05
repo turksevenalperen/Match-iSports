@@ -95,7 +95,7 @@ export default function ProfilePage() {
       })
 
       if (response.ok) {
-        toast.success("Profil Güncellendi", "Bilgileriniz başarıyla kaydedildi.")
+        toast.success("Profil Güncellendi - Bilgileriniz başarıyla kaydedildi.")
         
         await update({
           teamName: form.teamName,
@@ -107,10 +107,10 @@ export default function ProfilePage() {
         router.push("/dashboard")
       } else {
         const data = await response.json()
-        toast.error("Hata", data.error || "Profil güncellenirken bir hata oluştu.")
+        toast.error("Hata: " + (data.error || "Profil güncellenirken bir hata oluştu."))
       }
     } catch (error) {
-      toast.error("Hata", "Profil güncellenirken bir hata oluştu.")
+      toast.error("Hata - Profil güncellenirken bir hata oluştu.")
     } finally {
       setIsLoading(false)
     }

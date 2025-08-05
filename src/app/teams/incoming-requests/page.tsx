@@ -76,17 +76,17 @@ export default function IncomingRequestsPage() {
       if (response.ok) {
         const data = await response.json()
         if (action === "ACCEPTED") {
-          toast.success("İstek Kabul Edildi", "Artık takımla sohbet edebilirsiniz.", 4000)
+          toast.success("İstek Kabul Edildi - Artık takımla sohbet edebilirsiniz.")
         } else {
-          toast.info("İstek Reddedildi", "İstek başarıyla reddedildi.", 3000)
+          toast.info("İstek Reddedildi - İstek başarıyla reddedildi.")
         }
         setIncomingRequests((prev) => prev.filter((req) => req.id !== requestId))
       } else {
         const errorData = await response.json()
-        toast.error("Hata Oluştu", errorData.error || "İstek işlenirken bir hata oluştu.", 5000)
+        toast.error("Hata Oluştu: " + (errorData.error || "İstek işlenirken bir hata oluştu."))
       }
     } catch (error) {
-      toast.error("Bağlantı Hatası", "İstek işlenirken bir hata oluştu.", 5000)
+      toast.error("Bağlantı Hatası - İstek işlenirken bir hata oluştu.")
     } finally {
       setLoadingActions((prev) => {
         const newSet = new Set(prev)
