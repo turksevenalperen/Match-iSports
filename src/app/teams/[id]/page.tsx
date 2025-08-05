@@ -44,12 +44,16 @@ export default function TeamProfilePage() {
   const [isRequested, setIsRequested] = useState(false)
 
   useEffect(() => {
-    if (params.id) {
+    if (params && params.id) {
       fetchTeamProfile()
     }
-  }, [params.id])
+  }, [params?.id])
 
   const fetchTeamProfile = async () => {
+    if (!params || !params.id) {
+      setIsLoading(false)
+      return
+    }
     try {
       const response = await fetch(`/api/teams/${params.id}`)
       if (response.ok) {
@@ -64,6 +68,10 @@ export default function TeamProfilePage() {
   }
 
   const sendTeamRequest = async () => {
+    if (!params || !params.id) {
+      toast.error("Takım bilgisi bulunamadı")
+      return
+    }
     try {
       const response = await fetch(`/api/teams/${params.id}/request`, {
         method: "POST"
@@ -82,6 +90,10 @@ export default function TeamProfilePage() {
   }
 
   const cancelTeamRequest = async () => {
+    if (!params || !params.id) {
+      toast.error("Takım bilgisi bulunamadı")
+      return
+    }
     try {
       const response = await fetch(`/api/teams/${params.id}/request`, {
         method: "DELETE"

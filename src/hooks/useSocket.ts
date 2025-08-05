@@ -7,8 +7,15 @@ export const useSocket = () => {
   useEffect(() => {
     // Initialize socket connection
     if (!socketRef.current) {
+      console.log('🔄 Initializing Socket.IO connection...')
+      
       // First, initialize the socket.io server
-      fetch('/api/socketio').catch(console.error)
+      fetch('/api/socketio')
+        .then(res => res.json())
+        .then(data => {
+          console.log('📡 Socket.IO server status:', data)
+        })
+        .catch(console.error)
       
       socketRef.current = io({
         path: '/api/socketio',
@@ -20,23 +27,23 @@ export const useSocket = () => {
       })
 
       socketRef.current.on('connect', () => {
-        console.log('Connected to Socket.io server')
+        console.log('✅ Connected to Socket.io server:', socketRef.current?.id)
       })
 
       socketRef.current.on('disconnect', (reason) => {
-        console.log('Disconnected from Socket.io server:', reason)
+        console.log('❌ Disconnected from Socket.io server:', reason)
       })
 
       socketRef.current.on('connect_error', (error) => {
-        console.error('Socket connection error:', error)
+        console.error('🚨 Socket connection error:', error)
       })
 
       socketRef.current.on('reconnect', (attemptNumber) => {
-        console.log('Reconnected to Socket.io server, attempt:', attemptNumber)
+        console.log('🔄 Reconnected to Socket.io server, attempt:', attemptNumber)
       })
 
       socketRef.current.on('reconnect_error', (error) => {
-        console.error('Socket reconnection error:', error)
+        console.error('🚨 Socket reconnection error:', error)
       })
     }
 
@@ -93,6 +100,7 @@ export const useSocket = () => {
 
   return {
     socket: socketRef.current,
+    connected: socketRef.current?.connected || false,
     joinRoom,
     leaveRoom,
     sendMessage,

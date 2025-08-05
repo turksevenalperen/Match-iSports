@@ -133,4 +133,29 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(249, 115, 22, 0.2);
   }
+
+  /* Custom scrollbar styles */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: #ea580c #374151;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 4px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: #ea580c;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: #f97316;
+  }
 }
