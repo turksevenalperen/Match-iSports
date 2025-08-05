@@ -24,7 +24,7 @@ const CITIES = [
 
 function RegisterPage() {
   const searchParams = useSearchParams()
-  const packageType = searchParams.get('package') || 'normal'
+  const packageType = (searchParams && searchParams.get('package')) || 'normal'
   const isPro = packageType === 'pro'
   
   const [formData, setFormData] = useState({
