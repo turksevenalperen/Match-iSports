@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  teamName  String
+  city      String
+  sport     SportType
+  rating    Int      @default(50)
+  bio       String?
+  logo      String?
+  isPro     Boolean  @default(false)  // Pro paket kullanıcısı mı
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+    activities       Activity[]      // Yeni eklendi
+
+  // Relations
+  createdMatches   Match[]         @relation("MatchCreator")
+  matchRequests    MatchRequest[]  @relation("RequestCreator")
+  sentTeamRequests TeamRequest[]   @relation("TeamRequestSender")
+  receivedTeamRequests TeamRequest[] @relation("TeamRequestReceiver")
+  sentMessages     Message[]       @relation("MessageSender")
+  sentChatMessages ChatMessage[]   @relation("ChatMessageSender")
+  receivedChatMessages ChatMessage[] @relation("ChatMessageReceiver")
+  matchHistory1    MatchHistory[]  @relation("Team1")
+  matchHistory2    MatchHistory[]  @relation("Team2")
+
+  @@map("users")
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  creatorId   String
+  title       String
+  description String
+  date        DateTime
+  location    String
+  sport       SportType
+  status      MatchStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  creator      User           @relation("MatchCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  requests     MatchRequest[]
+  messages     Message[]
+
+  @@map("matches")
+}
+
+model MatchRequest {
+  id          String        @id @default(cuid())
+  matchId     String
+  requesterId String
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+
+  // Relations
+  match     Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  requester User  @relation("RequestCreator", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, requesterId])
+  @@map("match_requests")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  matchId   String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  match  Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  sender User  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  sender   User @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ChatMessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model TeamRequest {
+  id          String        @id @default(cuid())
+  senderId    String
+  receiverId  String
+  message     String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  sender   User @relation("TeamRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("TeamRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("team_requests")
+}
+
+model MatchHistory {
+  id       String   @id @default(cuid())
+  team1Id  String
+  team2Id  String
+  score1   Int?
+  score2   Int?
+  location String
+  date     DateTime
+  rating1  Int?
+  rating2  Int?
+  createdAt DateTime @default(now())
+
+  // Relations
+  team1 User @relation("Team1", fields: [team1Id], references: [id], onDelete: Cascade)
+  team2 User @relation("Team2", fields: [team2Id], references: [id], onDelete: Cascade)
+
+  @@map("match_history")
+}
+
+// Enums
+enum SportType {
+  FUTBOL
+  BASKETBOL
+  VOLEYBOL
+  TENIS
+  HENTBOL      // Yeni eklendi
+  BADMINTON    // Yeni eklendi
+}
+enum ActivityType {
+  PLATFORM_JOIN     // Platforma katıldın
+  REQUEST_SENT      // İstek gönderdin
+  REQUEST_RECEIVED  // İstek aldın  
+  REQUEST_ACCEPTED  // İsteğin kabul edildi
+  REQUEST_REJECTED  // İsteğin reddedildi
+  MATCH_CREATED     // Maç ilanı verdin
+  CHAT_STARTED      // Sohbet başladı
+  MATCH_WON         // Maç kazandın
+  MATCH_LOST        // Maç kaybettin
+}
+model Activity {
+  id          String      @id @default(cuid())
+  userId      String
+  type        ActivityType
+  title       String
+  description String
+  metadata    Json?       // Extra bilgiler için
+  createdAt   DateTime    @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+
+
+enum MatchStatus {
+  ACTIVE
+  MATCHED
+  COMPLETED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

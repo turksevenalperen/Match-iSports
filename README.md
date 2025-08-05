@@ -1,6 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MatchInSports ⚽🏀🏐
 
-## Getting Started
+A modern sports team matching platform built with Next.js, TypeScript, and Prisma.
+
+## Features ✨
+
+- 🔐 **User Authentication** - Secure login/register with NextAuth.js
+- 👥 **Team Management** - Create and manage sports teams
+- 🎯 **Smart Matching** - Find teams by sport, location, and skill level
+- 💬 **Real-time Chat** - WebSocket-based messaging with Socket.IO
+- 📊 **Team Profiles** - Detailed team pages with stats and logos
+- 🎨 **Modern UI** - Beautiful dark theme with orange accents
+- 📱 **Responsive Design** - Works on all devices
+
+## Tech Stack 🛠️
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: TailwindCSS, Radix UI
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js
+- **File Upload**: Cloudinary
+- **Real-time**: Socket.IO
+- **Deployment**: Vercel
+
+## Getting Started 🚀
 
 First, run the development server:
 
