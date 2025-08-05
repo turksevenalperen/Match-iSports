@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useToastContext } from "@/components/toast-provider"
+import { useNotifications } from "@/contexts/NotificationContext"
 
 interface TeamRequest {
   id: string
@@ -95,13 +96,12 @@ export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToastContext()
-  const [incomingRequests, setIncomingRequests] = useState<TeamRequest[]>([])
+  const { data: notificationData, refreshNotifications } = useNotifications()
+  
+  // Local states for UI interactions
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([])
-  const [isLoadingRequests, setIsLoadingRequests] = useState(true)
   const [isLoadingSentRequests, setIsLoadingSentRequests] = useState(false)
   const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set())
-  const [activities, setActivities] = useState<Activity[]>([])
-  const [isLoadingActivities, setIsLoadingActivities] = useState(true)
   const [teams, setTeams] = useState<Team[]>([])
   const [isLoadingTeams, setIsLoadingTeams] = useState(false)
   const [searchFilters, setSearchFilters] = useState({
@@ -110,27 +110,17 @@ export default function DashboardPage() {
     rating: ""
   })
 
+  // Notification context'inden gelen veriler
+  const incomingRequests = notificationData.teamRequests
+  const activities = notificationData.activities
+  const isLoadingRequests = false // Context handles loading
+  const isLoadingActivities = false // Context handles loading
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login")
-    } else if (status === "authenticated") {
-      fetchIncomingRequests()
     }
   }, [status, router])
-
-  const fetchIncomingRequests = async () => {
-    try {
-      const response = await fetch("/api/teams/incoming-requests")
-      if (response.ok) {
-        const data = await response.json()
-        setIncomingRequests(data)
-      }
-    } catch (error) {
-      console.error("Error fetching requests:", error)
-    } finally {
-      setIsLoadingRequests(false)
-    }
-  }
 
   const fetchSentRequests = async () => {
     setIsLoadingSentRequests(true)
@@ -147,24 +137,8 @@ export default function DashboardPage() {
     }
   }
 
-  const fetchActivities = async () => {
-    try {
-      const response = await fetch("/api/activities")
-      if (response.ok) {
-        const data = await response.json()
-        setActivities(data)
-      }
-    } catch (error) {
-      console.error("Error fetching activities:", error)
-    } finally {
-      setIsLoadingActivities(false)
-    }
-  }
-
   useEffect(() => {
     if (status === "authenticated") {
-      fetchIncomingRequests()
-      fetchActivities()
       fetchTeams() // İlk yüklemede takımları getir
       fetchSentRequests() // Gönderilen istekleri getir
     }
@@ -272,7 +246,9 @@ export default function DashboardPage() {
         } else {
           toast.info("İstek Reddedildi 📝 İstek başarıyla reddedildi.")
         }
-        setIncomingRequests((prev) => prev.filter((req) => req.id !== requestId))
+        
+        // Başarılı işlem sonrası bildirimleri yenile
+        await refreshNotifications()
       } else {
         const errorData = await response.json()
         toast.error("Hata Oluştu! ❌ " + (errorData.error || "İstek işlenirken bir hata oluştu."))
@@ -316,7 +292,9 @@ export default function DashboardPage() {
           description: `${targetTeamName} takımına maç isteği gönderdiniz`,
           createdAt: new Date().toISOString()
         }
-        setActivities(prev => [newActivity, ...prev.slice(0, 9)])
+        
+        // Aktiviteleri yenile
+        await refreshNotifications()
         
         // Gönderilen istekleri yenile
         fetchSentRequests()
@@ -362,7 +340,9 @@ export default function DashboardPage() {
           description: `${targetTeamName} takımına gönderilen istek iptal edildi`,
           createdAt: new Date().toISOString()
         }
-        setActivities(prev => [newActivity, ...prev.slice(0, 9)])
+        
+        // Aktiviteleri yenile
+        await refreshNotifications()
         
       } else {
         const error = await response.json()

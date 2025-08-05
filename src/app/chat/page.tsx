@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSocket } from '@/hooks/useSocket'
+import { useNotifications } from '@/contexts/NotificationContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ export default function ChatPage() {
   const { data: session } = useSession()
   const { toast } = useToastContext()
   const socket = useSocket()
+  const { data: notificationData, refreshNotifications } = useNotifications()
   
   // States
   const [users, setUsers] = useState<User[]>([])
@@ -49,6 +51,9 @@ export default function ChatPage() {
     if (!session?.user?.id) return
 
     try {
+      // Notification context'ini yenile (unread count'lar için)
+      await refreshNotifications()
+      
       // Kullanıcıları yenile
       const usersResponse = await fetch('/api/users')
       if (usersResponse.ok) {
@@ -68,7 +73,7 @@ export default function ChatPage() {
     } catch (error) {
       console.error('Data refresh error:', error)
     }
-  }, [session?.user?.id, selectedUser])
+  }, [session?.user?.id, selectedUser, refreshNotifications])
 
   // Kullanıcıları yükle
   useEffect(() => {
@@ -291,11 +296,21 @@ export default function ChatPage() {
                 <p className="text-orange-200">Anlık mesajlaşma</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className={`h-3 w-3 rounded-full ${socket.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-sm text-gray-300">
-                {socket.connected ? 'Bağlı' : 'Bağlantısız'}
-              </span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className={`h-3 w-3 rounded-full ${socket.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-sm text-gray-300">
+                  {socket.connected ? 'Bağlı' : 'Bağlantısız'}
+                </span>
+              </div>
+              {notificationData.unreadChatCount > 0 && (
+                <div className="flex items-center space-x-2">
+                  <div className="bg-orange-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                    {notificationData.unreadChatCount > 99 ? '99+' : notificationData.unreadChatCount}
+                  </div>
+                  <span className="text-sm text-orange-200">Okunmamış mesaj</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
