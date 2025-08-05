@@ -77,25 +77,25 @@ export function useSocket(): SocketHook {
   const onNewMessage = useCallback((callback: (message: Message) => void) => {
     if (isProduction || !socket) return
 
-    socket.on('newMessage', callback)
+    socket.on('new-message', callback)
   }, [socket, isProduction])
 
   const sendMessage = useCallback((roomId: string, message: Message) => {
     if (isProduction || !socket) return
 
-    socket.emit('sendMessage', { roomId, message })
+    socket.emit('send-message', { roomId, message })
   }, [socket, isProduction])
 
   const joinRoom = useCallback((roomId: string) => {
     if (isProduction || !socket) return
 
-    socket.emit('joinRoom', roomId)
+    socket.emit('join-room', roomId)
   }, [socket, isProduction])
 
   const removeListeners = useCallback(() => {
     if (isProduction || !socket) return
 
-    socket.off('newMessage')
+    socket.off('new-message')
   }, [socket, isProduction])
 
   if (isProduction) {

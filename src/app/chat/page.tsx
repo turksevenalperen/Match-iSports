@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSocket } from '@/hooks/useSocket'
 import { Card } from '@/components/ui/card'
@@ -45,7 +45,7 @@ export default function ChatPage() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Kullanıcıları ve mesajları yükle
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     if (!session?.user?.id) return
 
     try {
@@ -68,7 +68,7 @@ export default function ChatPage() {
     } catch (error) {
       console.error('Data refresh error:', error)
     }
-  }
+  }, [session?.user?.id, selectedUser])
 
   // Kullanıcıları yükle
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function ChatPage() {
       if (process.env.NODE_ENV === 'production') {
         pollingIntervalRef.current = setInterval(() => {
           refreshData()
-        }, 3000) // 3 saniyede bir yenile
+        }, 2000) // 2 saniyede bir yenile (daha hızlı)
       }
     }
 
@@ -108,7 +108,7 @@ export default function ChatPage() {
         clearInterval(pollingIntervalRef.current)
       }
     }
-  }, [session])
+  }, [session, selectedUser]) // selectedUser'ı dependency'e ekledim
 
   // Socket listeners
   useEffect(() => {
