@@ -68,48 +68,66 @@ export default function TeamProfilePage() {
   }
 
   const sendTeamRequest = async () => {
-    if (!params || !params.id) {
+    if (!params || !params.id || !team) {
       toast.error("Takım bilgisi bulunamadı")
       return
     }
     try {
-      const response = await fetch(`/api/teams/${params.id}/request`, {
-        method: "POST"
-      })
-      
+      const response = await fetch('/api/teams/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetTeamId: team.id,
+          message: `Merhaba ${team.teamName}! Sizinle bir hazırlık maçı yapmak istiyoruz. İletişime geçelim!`
+        })
+      });
       if (response.ok) {
-        setIsRequested(true)
-        toast.success("Maç isteği başarıyla gönderildi!")
+        setIsRequested(true);
+        toast.success("Maç isteği başarıyla gönderildi!");
       } else {
-        const data = await response.json()
-        toast.error(data.error || "Bir hata oluştu")
+        const data = await response.json();
+        toast.error(data.error || "Bir hata oluştu");
       }
     } catch (error) {
-      toast.error("Bir hata oluştu")
+      toast.error("Bir hata oluştu");
     }
-  }
+  };
 
+  // Takıma gönderilen isteği iptal etmek için /api/teams/my-requests endpointini kullan
   const cancelTeamRequest = async () => {
-    if (!params || !params.id) {
-      toast.error("Takım bilgisi bulunamadı")
-      return
+    if (!team) {
+      toast.error("Takım bilgisi bulunamadı");
+      return;
     }
     try {
-      const response = await fetch(`/api/teams/${params.id}/request`, {
-        method: "DELETE"
-      })
-      
+      // Önce kullanıcının gönderdiği istekleri çek
+      const res = await fetch("/api/teams/my-requests");
+      let requestId = null;
+      if (res.ok) {
+        const data = await res.json();
+        const found = data.find((req: any) => req.receiver?.id === team.id);
+        if (found) requestId = found.id;
+      }
+      if (!requestId) {
+        toast.error("İptal edilecek istek bulunamadı");
+        return;
+      }
+      const response = await fetch('/api/teams/my-requests', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId }),
+      });
       if (response.ok) {
-        setIsRequested(false)
-        toast.success("İstek başarıyla iptal edildi!")
+        setIsRequested(false);
+        toast.success("İstek başarıyla iptal edildi!");
       } else {
-        const data = await response.json()
-        toast.error(data.error || "Bir hata oluştu")
+        const data = await response.json();
+        toast.error(data.error || "Bir hata oluştu");
       }
     } catch (error) {
-      toast.error("Bir hata oluştu")
+      toast.error("Bir hata oluştu");
     }
-  }
+  };
 
   const getTotalMatches = (team: TeamProfile) => {
     return team._count.matchHistory1 + team._count.matchHistory2

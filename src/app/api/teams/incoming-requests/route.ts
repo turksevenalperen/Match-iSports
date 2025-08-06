@@ -85,11 +85,25 @@ export async function PATCH(request: Request) {
         },
         receiver: {
           select: {
+            id: true,
             teamName: true
           }
         }
       }
     })
+
+ if (action === 'ACCEPTED') {
+  await prisma.matchHistory.create({
+    data: {
+      team1Id: updatedRequest.sender.id,
+      team2Id: updatedRequest.receiver.id,
+      team1Name: updatedRequest.sender.teamName,
+      team2Name: updatedRequest.receiver.teamName,
+      location: '',
+      date: new Date(),
+    }
+  });
+}
 
     // Create activity for both teams
     if (action === 'ACCEPTED') {

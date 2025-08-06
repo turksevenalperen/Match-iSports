@@ -39,13 +39,13 @@ export async function POST(
       )
     }
 
+
     // Check if there's already a pending request
-    const existingRequest = await prisma.teamRequest.findUnique({
+    const existingRequest = await prisma.teamRequest.findFirst({
       where: {
-        senderId_receiverId: {
-          senderId: session.user.id,
-          receiverId: targetTeamId
-        }
+        senderId: session.user.id,
+        receiverId: targetTeamId,
+        status: "PENDING"
       }
     })
 

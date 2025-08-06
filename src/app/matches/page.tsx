@@ -77,23 +77,83 @@ export default function MatchesPage() {
     setFilters(prev => ({ ...prev, [key]: value }))
   }
 
-  const sendMatchRequest = async (matchId: string) => {
+  const [sentRequests, setSentRequests] = useState<any[]>([]);
+  const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set());
+
+  // Kullanıcının gönderdiği istekleri çek
+  const fetchSentRequests = async () => {
     try {
-      const response = await fetch(`/api/matches/${matchId}/request`, {
-        method: "POST"
-      })
-      
+      const response = await fetch("/api/teams/my-requests");
       if (response.ok) {
-        toast.success("İstek başarıyla gönderildi!")
-        fetchMatches() // Refresh list
-      } else {
-        const data = await response.json()
-        toast.error(data.error || "Bir hata oluştu")
+        const data = await response.json();
+        setSentRequests(data);
       }
     } catch (error) {
-      toast.error("Bir hata oluştu")
+      // ignore
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchSentRequests();
+  }, []);
+
+  const sendMatchRequest = async (match: Match) => {
+    setLoadingActions(prev => new Set([...prev, match.creator.id]));
+    try {
+      const response = await fetch('/api/teams/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetTeamId: match.creator.id,
+          message: `Merhaba ${match.creator.teamName}! İlanınıza başvuru yapmak istiyoruz.`
+        })
+      });
+
+      if (response.ok) {
+        toast.success("İstek başarıyla gönderildi!");
+        fetchMatches();
+        fetchSentRequests();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "Bir hata oluştu");
+      }
+    } catch (error) {
+      toast.error("Bir hata oluştu");
+    } finally {
+      setLoadingActions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(match.creator.id);
+        return newSet;
+      });
+    }
+  };
+
+  const cancelMatchRequest = async (requestId: string, teamName: string, teamId: string) => {
+    setLoadingActions(prev => new Set([...prev, teamId]));
+    try {
+      const response = await fetch('/api/teams/my-requests', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId }),
+      });
+      if (response.ok) {
+        toast.info("İstek iptal edildi: " + teamName);
+        setSentRequests(prev => prev.filter(req => req.id !== requestId));
+        fetchMatches();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || "İptal sırasında hata oluştu");
+      }
+    } catch (error) {
+      toast.error("Bir hata oluştu");
+    } finally {
+      setLoadingActions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(teamId);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -227,13 +287,34 @@ export default function MatchesPage() {
                         {match._count.requests} başvuru
                       </span>
                       {session?.user?.id !== match.creator.id ? (
-                        <Button 
-                          size="sm"
-                          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
-                          onClick={() => sendMatchRequest(match.id)}
-                        >
-                          İstek Gönder
-                        </Button>
+                        (() => {
+                          // Bu ilana daha önce istek gönderilmiş mi?
+                          const sentRequest = sentRequests.find(req => req.receiver?.id === match.creator.id);
+                          if (sentRequest) {
+                            return (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500"
+                                onClick={() => cancelMatchRequest(sentRequest.id, match.creator.teamName, match.creator.id)}
+                                disabled={loadingActions.has(match.creator.id)}
+                              >
+                                {loadingActions.has(match.creator.id) ? "İptal Ediliyor..." : "İstek İptal Et"}
+                              </Button>
+                            );
+                          } else {
+                            return (
+                              <Button
+                                size="sm"
+                                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+                                onClick={() => sendMatchRequest(match)}
+                                disabled={loadingActions.has(match.creator.id)}
+                              >
+                                {loadingActions.has(match.creator.id) ? "Gönderiliyor..." : "İstek Gönder"}
+                              </Button>
+                            );
+                          }
+                        })()
                       ) : (
                         <span className="text-sm text-orange-400 font-medium bg-orange-500/20 px-3 py-1 rounded-full border border-orange-500/30">
                           Senin İlanın

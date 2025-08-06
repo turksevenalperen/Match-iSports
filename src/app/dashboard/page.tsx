@@ -437,17 +437,23 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Avatar className="h-14 w-14 border-2 border-orange-500/30 ring-2 ring-orange-500/20">
-                <AvatarImage 
-                  src={session.user.logo || ''} 
-                  alt={`${session.user.teamName} logo`}
-                  className="object-cover w-full h-full rounded-full"
-                  style={{ objectPosition: 'center' }}
-                />
-                <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-2xl font-bold">
-                  {getSportIcon(session.user.sport)}
-                </AvatarFallback>
-              </Avatar>
+              <button
+                onClick={() => router.push(`/profile/`)}
+                title="Takım Profilim"
+                className="focus:outline-none"
+              >
+                <Avatar className="h-14 w-14 border-2 border-orange-500/30 ring-2 ring-orange-500/20 transition-transform hover:scale-105 cursor-pointer">
+                  <AvatarImage 
+                    src={session.user.logo || ''} 
+                    alt={`${session.user.teamName} logo`}
+                    className="object-cover w-full h-full rounded-full"
+                    style={{ objectPosition: 'center' }}
+                  />
+                  <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-2xl font-bold">
+                    {getSportIcon(session.user.sport)}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
@@ -497,9 +503,20 @@ export default function DashboardPage() {
                 <Users className="h-5 w-5 text-orange-400" />
                 <span className="text-orange-300 font-medium">İlanlar</span>
               </Link>
+              <Link href="/matches/upcoming" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
+                <Calendar className="h-5 w-5 text-orange-400" />
+                <span className="text-orange-300 font-medium">Yaklaşan Maçlar</span>
+              </Link>
               <Link href="/chat" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
                 <MessageCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-orange-300 font-medium">Mesajlar</span>
+                <span className="text-orange-300 font-medium relative">
+                  Mesajlar
+                  {notificationData.unreadChatCount > 0 && (
+                    <span className="absolute -top-2 -right-6 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] shadow-lg">
+                      {notificationData.unreadChatCount > 99 ? '99+' : notificationData.unreadChatCount}
+                    </span>
+                  )}
+                </span>
               </Link>
               <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
                 <Award className="h-5 w-5 text-orange-400" />

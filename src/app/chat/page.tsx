@@ -7,6 +7,7 @@ import { useNotifications } from '@/contexts/NotificationContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useToastContext } from '@/components/toast-provider'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -29,6 +30,8 @@ interface Message {
 }
 
 export default function ChatPage() {
+  // Polling için interval ref
+  const pollingMessagesRef = useRef<NodeJS.Timeout | null>(null)
   const { data: session } = useSession()
   const { toast } = useToastContext()
   const socket = useSocket()
@@ -47,21 +50,17 @@ export default function ChatPage() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Kullanıcıları ve mesajları yükle
+
   const refreshData = useCallback(async () => {
     if (!session?.user?.id) return
 
     try {
-      // Notification context'ini yenile (unread count'lar için)
       await refreshNotifications()
-      
-      // Kullanıcıları yenile
-      const usersResponse = await fetch('/api/users')
+      const usersResponse = await fetch('/api/match-history')
       if (usersResponse.ok) {
         const userData = await usersResponse.json()
-        setUsers(userData.filter((user: User) => user.id !== session?.user?.id))
+        setUsers(userData)
       }
-
-      // Seçili kullanıcı varsa mesajları yenile
       if (selectedUser) {
         const messagesResponse = await fetch(`/api/messages?otherUserId=${selectedUser.id}`)
         if (messagesResponse.ok) {
@@ -79,13 +78,38 @@ export default function ChatPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users')
+        const response = await fetch('/api/match-history')
         if (response.ok) {
           const data = await response.json()
-          setUsers(data.filter((user: User) => user.id !== session?.user?.id))
+          // Her eşleşmede, diğer takımı user olarak göster
+          const myId = session?.user?.id
+          const usersList = data
+            .map((match: any) => {
+              // Kullanıcı kendi takımını değil, karşı takımı görecek
+              if (match.team1Id === myId) {
+                return {
+                  id: match.team2Id,
+                  teamName: match.team2Name,
+                  city: match.team2?.city || '',
+                  sport: match.team2?.sport || '',
+                }
+              } else {
+                return {
+                  id: match.team1Id,
+                  teamName: match.team1Name,
+                  city: match.team1?.city || '',
+                  sport: match.team1?.sport || '',
+                }
+              }
+            })
+            // Aynı takım birden fazla eşleşmede olabilir, uniq yap
+            .filter((user: any, index: number, arr: any[]) =>
+              arr.findIndex(u => u.id === user.id) === index
+            )
+          setUsers(usersList)
         }
       } catch (error) {
-        console.error('Users yüklenemedi:', error)
+        console.error('Eşleşmiş takımlar yüklenemedi:', error)
       } finally {
         setIsLoading(false)
       }
@@ -121,26 +145,20 @@ export default function ChatPage() {
 
     socket.onNewMessage((message: Message) => {
       console.log('📨 Yeni mesaj geldi:', message)
-      
-      // Eğer seçili kullanıcı ile ilgili mesajsa ekle
-      if (selectedUser && 
+      // Eğer panelde açık olan kullanıcı ile ilgiliyse anlık ekle
+      if (
+        (selectedUser &&
           ((message.senderId === selectedUser.id && message.receiverId === session?.user?.id) ||
-           (message.senderId === session?.user?.id && message.receiverId === selectedUser.id))) {
+            (message.senderId === session?.user?.id && message.receiverId === selectedUser.id)))
+      ) {
         setMessages(prev => [...prev, message])
-        
         // Eğer gelen mesaj seçili kullanıcıdan ise hemen okunmuş olarak işaretle
         if (message.senderId === selectedUser.id && message.receiverId === session?.user?.id) {
           markMessagesAsRead(selectedUser.id)
         }
-        
-        // Otomatik scroll
         setTimeout(() => scrollToBottom(), 100)
-        
-        // Bildirim (sadece gelen mesajlar için)
         if (message.senderId !== session?.user?.id) {
           toast.success(`${message.senderName}: ${message.content.slice(0, 50)}${message.content.length > 50 ? '...' : ''}`)
-          
-          // Browser notification (izin varsa)
           if (Notification.permission === 'granted') {
             new Notification('Yeni Mesaj', {
               body: `${message.senderName}: ${message.content}`,
@@ -148,18 +166,29 @@ export default function ChatPage() {
             })
           }
         }
-      } else if (message.receiverId === session?.user?.id && message.senderId !== session?.user?.id) {
-        // Seçili olmayan kullanıcıdan gelen mesaj - okunmamış sayısını artır
-        setUsers(prev => prev.map(user => 
-          user.id === message.senderId 
+      } else if (
+        // Eğer gelen mesaj, kullanıcıya ait ve panelde o kullanıcı açık değilse
+        message.receiverId === session?.user?.id && message.senderId !== session?.user?.id
+      ) {
+        setUsers(prev => prev.map(user =>
+          user.id === message.senderId
             ? { ...user, unreadCount: (user.unreadCount || 0) + 1 }
             : user
         ))
-        
-        // Bildirim göster
+        // Otomatik olarak o kullanıcıyı seç ve mesajı göster
+        setSelectedUser(prev => {
+          if (!prev || prev.id !== message.senderId) {
+            // Panelde açık değilse, o kullanıcıyı seç
+            const foundUser = users.find(u => u.id === message.senderId)
+            if (foundUser) {
+              setTimeout(() => {
+                setSelectedUser(foundUser)
+              }, 0)
+            }
+          }
+          return prev
+        })
         toast.success(`${message.senderName}: ${message.content.slice(0, 50)}${message.content.length > 50 ? '...' : ''}`)
-        
-        // Browser notification (izin varsa)
         if (Notification.permission === 'granted') {
           new Notification('Yeni Mesaj', {
             body: `${message.senderName}: ${message.content}`,
@@ -178,14 +207,31 @@ export default function ChatPage() {
   useEffect(() => {
     if (selectedUser && session?.user?.id) {
       loadMessages(selectedUser.id)
-      
       // Mesajları okunmuş olarak işaretle
       markMessagesAsRead(selectedUser.id)
-      
       // Chat room'una katıl (her iki kullanıcının ID'si ile room oluştur)
       const roomId = createRoomId(session.user.id, selectedUser.id)
       socket.joinRoom(roomId)
       console.log('🏠 Chat room\'una katıldı:', roomId)
+
+      // 1 saniyede bir mesajları güncelle (polling)
+      if (pollingMessagesRef.current) clearInterval(pollingMessagesRef.current)
+      pollingMessagesRef.current = setInterval(() => {
+        loadMessages(selectedUser.id)
+      }, 1000)
+    } else {
+      // Kullanıcı seçili değilse polling'i durdur
+      if (pollingMessagesRef.current) {
+        clearInterval(pollingMessagesRef.current)
+        pollingMessagesRef.current = null
+      }
+    }
+    // Cleanup
+    return () => {
+      if (pollingMessagesRef.current) {
+        clearInterval(pollingMessagesRef.current)
+        pollingMessagesRef.current = null
+      }
     }
   }, [selectedUser, session?.user?.id])
 
@@ -328,23 +374,27 @@ export default function ChatPage() {
                   <div
                     key={user.id}
                     onClick={() => setSelectedUser(user)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors relative ${
+                    className={`p-3 rounded-lg cursor-pointer transition-colors relative flex items-center gap-3 ${
                       selectedUser?.id === user.id
                         ? 'bg-orange-500/20 border border-orange-500/30'
                         : 'hover:bg-gray-700/50'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="text-white font-medium">{user.teamName}</div>
-                        <div className="text-gray-400 text-sm">{user.city} • {user.sport}</div>
-                      </div>
-                      {(user.unreadCount || 0) > 0 && (
-                        <div className="ml-2 bg-orange-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center min-w-[24px]">
-                          {(user.unreadCount || 0) > 99 ? '99+' : user.unreadCount}
-                        </div>
-                      )}
+                    <Avatar className="h-10 w-10 border border-orange-500/30 bg-gray-900">
+                      <AvatarImage src={''} alt={user.teamName} />
+                      <AvatarFallback className="bg-orange-500/30 text-orange-900 font-bold">
+                        {user.teamName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium truncate">{user.teamName || user.id || 'Bilinmeyen Takım'}</div>
+                      <div className="text-gray-400 text-sm truncate">{user.city} • {user.sport}</div>
                     </div>
+                    {(user.unreadCount || 0) > 0 && (
+                      <div className="ml-2 bg-orange-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center min-w-[24px]">
+                        {(user.unreadCount || 0) > 99 ? '99+' : user.unreadCount}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {users.length === 0 && (

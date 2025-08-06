@@ -116,7 +116,6 @@ model TeamRequest {
   sender   User @relation("TeamRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("TeamRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  @@unique([senderId, receiverId])
   @@map("team_requests")
 }
 
@@ -124,6 +123,8 @@ model MatchHistory {
   id       String   @id @default(cuid())
   team1Id  String
   team2Id  String
+  team1Name String
+  team2Name String
   score1   Int?
   score2   Int?
   location String

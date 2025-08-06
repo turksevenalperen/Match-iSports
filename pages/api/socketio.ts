@@ -44,8 +44,8 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
       // Handle new message
       socket.on("send-message", (data: { roomId: string; message: any }) => {
         console.log("📨 Message received:", data)
-        // Broadcast to all clients in the room except sender
-        socket.to(data.roomId).emit("new-message", data.message)
+        // Broadcast to all clients in the room INCLUDING sender
+        io.in(data.roomId).emit("new-message", data.message)
       })
 
       // Handle typing indicator
