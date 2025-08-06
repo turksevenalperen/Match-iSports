@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       content: msg.content,
       senderId: msg.senderId,
       receiverId: msg.receiverId,
-      senderName: msg.sender.teamName,
+      senderName: msg.sender.teamName || 'Bilinmeyen Takım',
       timestamp: msg.createdAt.toISOString()
     }))
 
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       content: message.content,
       senderId: message.senderId,
       receiverId: message.receiverId,
-      senderName: senderName || session.user.teamName,
+      senderName: (senderName || session.user.teamName || 'Bilinmeyen Takım'),
       timestamp: message.createdAt.toISOString()
     }
 

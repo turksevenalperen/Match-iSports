@@ -54,24 +54,31 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.teamName = (user as any).teamName
-        token.city = (user as any).city
-        token.sport = (user as any).sport
-        token.rating = (user as any).rating
-        token.isPro = (user as any).isPro
-        token.logo = (user as any).logo
+        token.teamName = (user as any).teamName || 'Bilinmeyen Takım'
+        token.city = (user as any).city || ''
+        token.sport = (user as any).sport || ''
+        token.rating = (user as any).rating || 0
+        token.isPro = (user as any).isPro || false
+        token.logo = (user as any).logo || null
       }
+      // Fallbacklar
+      token.teamName = token.teamName || 'Bilinmeyen Takım'
+      token.city = token.city || ''
+      token.sport = token.sport || ''
+      token.rating = token.rating || 0
+      token.isPro = token.isPro || false
+      token.logo = token.logo || null
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!
-        session.user.teamName = token.teamName
-        session.user.city = token.city
-        session.user.sport = token.sport
-        session.user.rating = token.rating
-        session.user.isPro = token.isPro
-        session.user.logo = token.logo
+        session.user.teamName = token.teamName || 'Bilinmeyen Takım'
+        session.user.city = token.city || ''
+        session.user.sport = token.sport || ''
+        session.user.rating = token.rating || 0
+        session.user.isPro = token.isPro || false
+        session.user.logo = token.logo || null
       }
       return session
     }
