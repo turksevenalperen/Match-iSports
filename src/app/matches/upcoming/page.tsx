@@ -82,7 +82,7 @@ export default function UpcomingMatchesPage() {
       if (response.ok) {
         setMatches(prev => prev.filter(m => m.id !== matchId))
       } else {
-        alert('Maç silinemedi!')
+        alert('Maç silinemedi.!')
       }
     } catch (err) {
       alert('Bir hata oluştu!')
