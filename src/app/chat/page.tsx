@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSocket } from '@/hooks/useSocket'
+// import { useSocket } from '@/hooks/useSocket'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,7 @@ export default function ChatPage() {
   const pollingMessagesRef = useRef<NodeJS.Timeout | null>(null)
   const { data: session } = useSession()
   const { toast } = useToastContext()
-  const socket = useSocket()
+  // const socket = useSocket()
   const { data: notificationData, refreshNotifications } = useNotifications()
   
   // States
@@ -135,69 +135,7 @@ export default function ChatPage() {
     }
   }, [session, selectedUser]) // selectedUser'ı dependency'e ekledim
 
-  // Socket listeners
-  useEffect(() => {
-    if (!socket.socket) return
-
-    socket.onNewMessage((message: Message) => {
-      console.log('📨 Yeni mesaj geldi:', message)
-      // Eğer panelde açık olan kullanıcı ile ilgiliyse anlık ekle
-      if (
-        (selectedUser &&
-          ((message.senderId === selectedUser.id && message.receiverId === session?.user?.id) ||
-            (message.senderId === session?.user?.id && message.receiverId === selectedUser.id)))
-      ) {
-        setMessages(prev => [...prev, message])
-        // Eğer gelen mesaj seçili kullanıcıdan ise hemen okunmuş olarak işaretle
-        if (message.senderId === selectedUser.id && message.receiverId === session?.user?.id) {
-          markMessagesAsRead(selectedUser.id)
-        }
-        setTimeout(() => scrollToBottom(), 100)
-        if (message.senderId !== session?.user?.id) {
-          toast.success(`${message.senderName}: ${message.content.slice(0, 50)}${message.content.length > 50 ? '...' : ''}`)
-          if (Notification.permission === 'granted') {
-            new Notification('Yeni Mesaj', {
-              body: `${message.senderName}: ${message.content}`,
-              icon: '/favicon.ico'
-            })
-          }
-        }
-      } else if (
-        // Eğer gelen mesaj, kullanıcıya ait ve panelde o kullanıcı açık değilse
-        message.receiverId === session?.user?.id && message.senderId !== session?.user?.id
-      ) {
-        setUsers(prev => prev.map(user =>
-          user.id === message.senderId
-            ? { ...user, unreadCount: (user.unreadCount || 0) + 1 }
-            : user
-        ))
-        // Otomatik olarak o kullanıcıyı seç ve mesajı göster
-        setSelectedUser(prev => {
-          if (!prev || prev.id !== message.senderId) {
-            // Panelde açık değilse, o kullanıcıyı seç
-            const foundUser = users.find(u => u.id === message.senderId)
-            if (foundUser) {
-              setTimeout(() => {
-                setSelectedUser(foundUser)
-              }, 0)
-            }
-          }
-          return prev
-        })
-        toast.success(`${message.senderName}: ${message.content.slice(0, 50)}${message.content.length > 50 ? '...' : ''}`)
-        if (Notification.permission === 'granted') {
-          new Notification('Yeni Mesaj', {
-            body: `${message.senderName}: ${message.content}`,
-            icon: '/favicon.ico'
-          })
-        }
-      }
-    })
-
-    return () => {
-      socket.removeListeners()
-    }
-  }, [socket.socket, selectedUser, session?.user?.id, toast])
+  // Socket listeners kaldırıldı, sadece polling ile güncellenecek
 
   // Kullanıcı seçildiğinde mesajları yükle
   useEffect(() => {
@@ -205,10 +143,6 @@ export default function ChatPage() {
       loadMessages(selectedUser.id)
       // Mesajları okunmuş olarak işaretle
       markMessagesAsRead(selectedUser.id)
-      // Chat room'una katıl (her iki kullanıcının ID'si ile room oluştur)
-      const roomId = createRoomId(session.user.id, selectedUser.id)
-      socket.joinRoom(roomId)
-      console.log('🏠 Chat room\'una katıldı:', roomId)
       // 1 saniyede bir mesajları güncelle (polling)
       if (pollingMessagesRef.current) clearInterval(pollingMessagesRef.current)
       pollingMessagesRef.current = setInterval(() => {
@@ -288,10 +222,8 @@ export default function ChatPage() {
         setMessages(prev => [...prev, newMsg])
         setNewMessage('')
         
-        // Socket ile real-time gönder
-        const roomId = createRoomId(session.user.id, selectedUser.id)
-        socket.sendMessage(roomId, newMsg)
-        console.log('📤 Mesaj gönderildi:', newMsg)
+        // Mesaj gönderildi, polling ile otomatik güncellenecek
+        // console.log('📤 Mesaj gönderildi:', newMsg)
         
         scrollToBottom()
       } else {
