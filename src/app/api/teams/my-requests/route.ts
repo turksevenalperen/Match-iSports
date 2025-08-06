@@ -17,8 +17,7 @@ export async function GET() {
     // Get all pending requests sent by this user with receiver details
     const sentRequests = await prisma.teamRequest.findMany({
       where: {
-        senderId: session.user.id,
-        status: 'PENDING'
+        senderId: session.user.id
       },
       include: {
         receiver: {
@@ -73,8 +72,7 @@ export async function DELETE(request: Request) {
     const deletedRequest = await prisma.teamRequest.delete({
       where: {
         id: requestId,
-        senderId: session.user.id,
-        status: 'PENDING'
+        senderId: session.user.id
       },
       include: {
         receiver: {

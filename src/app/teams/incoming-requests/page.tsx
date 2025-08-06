@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -7,16 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Check,
-  X,
-  Star,
-  MapPin,
-  Calendar,
-  Trophy,
-  MessageCircle,
-  ArrowLeft,
-} from "lucide-react"
+import { Check, X, Star, MapPin, Calendar, Trophy, MessageCircle, ArrowLeft } from 'lucide-react'
 import Link from "next/link"
 import { useToastContext } from "@/components/toast-provider"
 
@@ -110,8 +100,8 @@ export default function IncomingRequestsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <div className="text-lg font-medium text-gray-200">Yükleniyor...</div>
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
+          <div className="text-base sm:text-lg font-medium text-gray-200">Yükleniyor...</div>
         </div>
       </div>
     )
@@ -125,24 +115,25 @@ export default function IncomingRequestsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Header */}
       <header className="bg-black/95 backdrop-blur-lg shadow-2xl border-b border-orange-500/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between py-3 sm:py-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
               <Link href="/dashboard">
-                <Button variant="outline" className="border-orange-500/40 text-orange-300 hover:bg-orange-500/10">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Dashboard'a Dön
+                <Button variant="outline" size="sm" className="border-orange-500/40 text-orange-300 hover:bg-orange-500/10 px-2 sm:px-3">
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Dashboard'a Dön</span>
+                  <span className="sm:hidden">Geri</span>
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent truncate">
                   Gelen Maç İstekleri
                 </h1>
-                <p className="text-gray-400">Size gönderilen maç isteklerini yönetin</p>
+                <p className="text-gray-400 text-xs sm:text-sm hidden sm:block">Size gönderilen maç isteklerini yönetin</p>
               </div>
             </div>
             {incomingRequests.length > 0 && (
-              <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 px-3 py-1">
+              <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 px-2 sm:px-3 py-1 text-xs sm:text-sm flex-shrink-0">
                 {incomingRequests.length} yeni istek
               </Badge>
             )}
@@ -151,21 +142,21 @@ export default function IncomingRequestsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="space-y-4 sm:space-y-6">
           {isLoadingRequests ? (
-            <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-              <div className="text-lg text-orange-300">İstekler yükleniyor...</div>
+            <div className="text-center py-12 sm:py-16">
+              <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
+              <div className="text-base sm:text-lg text-orange-300">İstekler yükleniyor...</div>
             </div>
           ) : incomingRequests.length === 0 ? (
             <Card className="border border-orange-500/30 shadow-2xl bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm">
-              <CardContent className="text-center py-16">
-                <div className="h-24 w-24 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-orange-500/30">
-                  <MessageCircle className="h-12 w-12 text-orange-400/60" />
+              <CardContent className="text-center py-12 sm:py-16 px-4 sm:px-6">
+                <div className="h-16 w-16 sm:h-24 sm:w-24 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-orange-500/30">
+                  <MessageCircle className="h-8 w-8 sm:h-12 sm:w-12 text-orange-400/60" />
                 </div>
-                <h3 className="text-2xl font-medium text-orange-300 mb-3">Henüz maç isteği yok</h3>
-                <p className="text-gray-400 mb-6">Başka takımlar size istek gönderdiğinde burada görünecek</p>
+                <h3 className="text-lg sm:text-2xl font-medium text-orange-300 mb-2 sm:mb-3">Henüz maç isteği yok</h3>
+                <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">Başka takımlar size istek gönderdiğinde burada görünecek</p>
                 <Link href="/dashboard">
                   <Button className="bg-orange-500 hover:bg-orange-600 text-white">
                     Dashboard'a Dön
@@ -174,71 +165,139 @@ export default function IncomingRequestsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {incomingRequests.map((request) => (
-                <Card 
+                <Card
                   key={request.id}
                   className="border border-orange-500/30 shadow-2xl bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm"
                 >
-                  <CardContent className="p-8">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-6 flex-1">
-                        <Avatar className="h-20 w-20 border-2 border-orange-500/30">
+                  <CardContent className="p-4 sm:p-6 lg:p-8">
+                    {/* Mobile Layout */}
+                    <div className="block lg:hidden">
+                      <div className="flex items-start space-x-3 sm:space-x-4 mb-4">
+                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-orange-500/30 flex-shrink-0">
                           <AvatarImage
-                            src={`/placeholder.svg?height=80&width=80&text=${request.sender.teamName.charAt(0)}`}
+                            src={`/placeholder.svg?height=64&width=64&text=${request.sender.teamName.charAt(0)}`}
                           />
-                          <AvatarFallback className="bg-orange-500/20 text-orange-300 font-bold text-2xl border border-orange-500/40">
+                          <AvatarFallback className="bg-orange-500/20 text-orange-300 font-bold text-lg sm:text-xl border border-orange-500/40">
                             {request.sender.teamName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4 mb-4">
-                            <h3 className="font-bold text-orange-200 text-2xl">{request.sender.teamName}</h3>
-                            <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 text-base px-3 py-1">
-                              <Star className="h-4 w-4 mr-1" />
-                              {request.sender.rating}/100
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="font-bold text-orange-200 text-lg sm:text-xl truncate">{request.sender.teamName}</h3>
+                            <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs px-2 py-0.5 flex-shrink-0">
+                              <Star className="h-3 w-3 mr-1" />
+                              {request.sender.rating}
                             </Badge>
                           </div>
-                          <div className="flex items-center space-x-8 text-gray-400 mb-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 text-gray-400 text-sm">
                             <div className="flex items-center">
-                              <MapPin className="h-5 w-5 mr-2 text-orange-400" />
-                              <span className="text-lg">{request.sender.city}</span>
+                              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-orange-400" />
+                              <span>{request.sender.city}</span>
                             </div>
                             <div className="flex items-center">
-                              <Trophy className="h-5 w-5 mr-2 text-orange-400" />
-                              <span className="text-lg">{request.sender.sport}</span>
+                              <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-orange-400" />
+                              <span>{request.sender.sport}</span>
                             </div>
                           </div>
-                          <div className="bg-gray-800/50 rounded-2xl p-6 mb-6 border border-orange-500/20">
-                            <h4 className="text-orange-300 font-semibold mb-3 text-lg">Mesaj:</h4>
-                            <p className="text-orange-100 italic text-lg leading-relaxed">"{request.message}"</p>
-                          </div>
-                          <p className="text-sm text-gray-500 flex items-center">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            {formatDate(request.createdAt)}
-                          </p>
                         </div>
                       </div>
-                      <div className="flex flex-col space-y-4 ml-8">
+                      
+                      <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4 mb-4 border border-orange-500/20">
+                        <h4 className="text-orange-300 font-semibold mb-2 text-sm sm:text-base">Mesaj:</h4>
+                        <p className="text-orange-100 italic text-sm sm:text-base leading-relaxed">"{request.message}"</p>
+                      </div>
+                      
+                      <p className="text-xs sm:text-sm text-gray-500 flex items-center mb-4">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        {formatDate(request.createdAt)}
+                      </p>
+                      
+                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                         <Button
-                          size="lg"
+                          size="sm"
                           onClick={() => handleRequestAction(request.id, "ACCEPTED")}
                           disabled={loadingActions.has(request.id)}
-                          className="bg-green-600 hover:bg-green-700 text-white min-w-[160px] h-14 shadow-lg rounded-xl text-lg font-semibold"
+                          className="bg-green-600 hover:bg-green-700 text-white flex-1 h-10 sm:h-12 shadow-lg rounded-lg text-sm sm:text-base font-semibold"
                         >
-                          <Check className="h-5 w-5 mr-2" />
+                          <Check className="h-4 w-4 mr-2" />
                           {loadingActions.has(request.id) ? "Kabul ediliyor..." : "Kabul Et"}
                         </Button>
                         <Button
-                          size="lg"
+                          size="sm"
                           variant="outline"
                           onClick={() => handleRequestAction(request.id, "REJECTED")}
                           disabled={loadingActions.has(request.id)}
-                          className="text-red-400 border-red-500/50 hover:bg-red-500/10 hover:border-red-500 min-w-[160px] h-14 bg-black/30 rounded-xl text-lg font-semibold"
+                          className="text-red-400 border-red-500/50 hover:bg-red-500/10 hover:border-red-500 flex-1 h-10 sm:h-12 bg-black/30 rounded-lg text-sm sm:text-base font-semibold"
                         >
-                          <X className="h-5 w-5 mr-2" />
+                          <X className="h-4 w-4 mr-2" />
                           {loadingActions.has(request.id) ? "Reddediliyor..." : "Reddet"}
                         </Button>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden lg:block">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-6 flex-1">
+                          <Avatar className="h-20 w-20 border-2 border-orange-500/30">
+                            <AvatarImage
+                              src={`/placeholder.svg?height=80&width=80&text=${request.sender.teamName.charAt(0)}`}
+                            />
+                            <AvatarFallback className="bg-orange-500/20 text-orange-300 font-bold text-2xl border border-orange-500/40">
+                              {request.sender.teamName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-4 mb-4">
+                              <h3 className="font-bold text-orange-200 text-2xl">{request.sender.teamName}</h3>
+                              <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 text-base px-3 py-1">
+                                <Star className="h-4 w-4 mr-1" />
+                                {request.sender.rating}/100
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-8 text-gray-400 mb-6">
+                              <div className="flex items-center">
+                                <MapPin className="h-5 w-5 mr-2 text-orange-400" />
+                                <span className="text-lg">{request.sender.city}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Trophy className="h-5 w-5 mr-2 text-orange-400" />
+                                <span className="text-lg">{request.sender.sport}</span>
+                              </div>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-2xl p-6 mb-6 border border-orange-500/20">
+                              <h4 className="text-orange-300 font-semibold mb-3 text-lg">Mesaj:</h4>
+                              <p className="text-orange-100 italic text-lg leading-relaxed">"{request.message}"</p>
+                            </div>
+                            <p className="text-sm text-gray-500 flex items-center">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              {formatDate(request.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col space-y-4 ml-8">
+                          <Button
+                            size="lg"
+                            onClick={() => handleRequestAction(request.id, "ACCEPTED")}
+                            disabled={loadingActions.has(request.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white min-w-[160px] h-14 shadow-lg rounded-xl text-lg font-semibold"
+                          >
+                            <Check className="h-5 w-5 mr-2" />
+                            {loadingActions.has(request.id) ? "Kabul ediliyor..." : "Kabul Et"}
+                          </Button>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={() => handleRequestAction(request.id, "REJECTED")}
+                            disabled={loadingActions.has(request.id)}
+                            className="text-red-400 border-red-500/50 hover:bg-red-500/10 hover:border-red-500 min-w-[160px] h-14 bg-black/30 rounded-xl text-lg font-semibold"
+                          >
+                            <X className="h-5 w-5 mr-2" />
+                            {loadingActions.has(request.id) ? "Reddediliyor..." : "Reddet"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

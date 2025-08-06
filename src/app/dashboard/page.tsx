@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -7,27 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Users,
-  Search,
-  MessageCircle,
-  Trophy,
-  LogOut,
-  Plus,
-  Check,
-  X,
-  Star,
-  MapPin,
-  Calendar,
-  Target,
-  TrendingUp,
-  Award,
-  Activity,
-  Zap,
-  Shield,
-  Clock,
-  CheckCircle,
-} from "lucide-react"
+import { Users, Search, MessageCircle, Trophy, LogOut, Plus, Check, X, Star, MapPin, Calendar, Target, TrendingUp, Award, Activity, Zap, Shield, Clock, CheckCircle, Menu } from 'lucide-react'
 import Link from "next/link"
 import { useToastContext } from "@/components/toast-provider"
 import { useNotifications } from "@/contexts/NotificationContext"
@@ -109,6 +88,7 @@ export default function DashboardPage() {
     sport: "",
     rating: ""
   })
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Notification context'inden gelen veriler
   const incomingRequests = notificationData.teamRequests
@@ -155,7 +135,6 @@ export default function DashboardPage() {
         params.append("minRating", min.toString())
         params.append("maxRating", max.toString())
       }
-
       const response = await fetch(`/api/teams/search?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
@@ -190,21 +169,21 @@ export default function DashboardPage() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "PLATFORM_JOIN":
-        return <Shield className="h-5 w-5 text-white" />
+        return <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "REQUEST_SENT":
-        return <MessageCircle className="h-5 w-5 text-white" />
+        return <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "REQUEST_RECEIVED":
-        return <MessageCircle className="h-5 w-5 text-white" />
+        return <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "REQUEST_ACCEPTED":
-        return <Check className="h-5 w-5 text-white" />
+        return <Check className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "REQUEST_REJECTED":
-        return <X className="h-5 w-5 text-white" />
+        return <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "REQUEST_CANCELLED":
-        return <X className="h-5 w-5 text-white" />
+        return <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       case "CHAT_STARTED":
-        return <MessageCircle className="h-5 w-5 text-white" />
+        return <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
       default:
-        return <Activity className="h-5 w-5 text-white" />
+        return <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
     }
   }
 
@@ -279,7 +258,6 @@ export default function DashboardPage() {
           message: `Merhaba ${targetTeamName}! Sizinle bir hazırlık maçı yapmak istiyoruz. İletişime geçelim!`
         }),
       })
-
       if (response.ok) {
         // Başarı bildirimi
         toast.success("İstek Gönderildi! ✅ " + `${targetTeamName} takımına maç isteğiniz başarıyla gönderildi.`)
@@ -298,7 +276,7 @@ export default function DashboardPage() {
         
         // Gönderilen istekleri yenile
         fetchSentRequests()
-        
+      
       } else {
         const error = await response.json()
         toast.error("Hata! ❌ " + (error.error || "İstek gönderilirken bir hata oluştu."))
@@ -325,7 +303,6 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ requestId }),
       })
-
       if (response.ok) {
         toast.info("İstek İptal Edildi ❌ " + `${targetTeamName} takımına gönderilen istek iptal edildi.`)
         
@@ -343,7 +320,7 @@ export default function DashboardPage() {
         
         // Aktiviteleri yenile
         await refreshNotifications()
-        
+      
       } else {
         const error = await response.json()
         toast.error("Hata! ❌ " + (error.error || "İstek iptal edilirken bir hata oluştu."))
@@ -434,49 +411,49 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Header */}
       <header className="bg-black/95 backdrop-blur-lg shadow-2xl border-b border-orange-500/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center py-3 sm:py-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
               <button
                 onClick={() => router.push(`/profile/`)}
                 title="Takım Profilim"
-                className="focus:outline-none"
+                className="focus:outline-none flex-shrink-0"
               >
-                <Avatar className="h-14 w-14 border-2 border-orange-500/30 ring-2 ring-orange-500/20 transition-transform hover:scale-105 cursor-pointer">
-                  <AvatarImage 
-                    src={session.user.logo || ''} 
+                <Avatar className="h-10 w-10 sm:h-14 sm:w-14 border-2 border-orange-500/30 ring-2 ring-orange-500/20 transition-transform hover:scale-105 cursor-pointer">
+                  <AvatarImage
+                    src={session.user.logo || ''}
                     alt={`${session.user.teamName} logo`}
                     className="object-cover w-full h-full rounded-full"
                     style={{ objectPosition: 'center' }}
                   />
-                  <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-2xl font-bold">
+                  <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-lg sm:text-2xl font-bold">
                     {getSportIcon(session.user.sport)}
                   </AvatarFallback>
                 </Avatar>
               </button>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent truncate">
                     {session.user.teamName}
                   </h1>
                   {session.user.isPro && (
-                    <div className="flex items-center bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/40">
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                    <div className="flex items-center bg-blue-500/20 text-blue-400 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border border-blue-500/40 flex-shrink-0">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
                       <span className="text-xs font-semibold">PRO</span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center space-x-4 text-gray-300">
+                <div className="flex items-center space-x-2 sm:space-x-4 text-gray-300 text-xs sm:text-sm flex-wrap">
                   <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1 text-orange-400" />
-                    {session.user.city}
+                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-orange-400" />
+                    <span className="truncate">{session.user.city}</span>
                   </div>
                   <div className="flex items-center">
-                    <Trophy className="h-4 w-4 mr-1 text-orange-400" />
-                    {session.user.sport}
+                    <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-orange-400" />
+                    <span className="truncate">{session.user.sport}</span>
                   </div>
-                  <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 font-semibold">
-                    <Star className="h-3 w-3 mr-1" />
+                  <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/40 font-semibold text-xs">
+                    <Star className="h-2 w-2 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                     {session.user.rating}/100
                   </Badge>
                 </div>
@@ -485,20 +462,23 @@ export default function DashboardPage() {
             <Button
               onClick={handleSignOut}
               variant="outline"
-              className="hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/50 bg-black/50 border-gray-600 text-gray-300"
+              size="sm"
+              className="hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/50 bg-black/50 border-gray-600 text-gray-300 ml-2 flex-shrink-0"
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              Çıkış Yap
+              <LogOut className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Çıkış Yap</span>
+              <span className="sm:hidden">Çıkış</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Top Navigation */}
-      <nav className="bg-black/90 backdrop-blur-lg border-b border-orange-500/20 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center space-x-6">
+      <nav className="bg-black/90 backdrop-blur-lg border-b border-orange-500/20 sticky top-16 sm:top-20 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between py-2 sm:py-3">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
               <Link href="/matches" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
                 <Users className="h-5 w-5 text-orange-400" />
                 <span className="text-orange-300 font-medium">İlanlar</span>
@@ -509,26 +489,37 @@ export default function DashboardPage() {
               </Link>
               <Link href="/chat" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
                 <MessageCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-orange-300 font-medium relative">
-                  Mesajlar
-                  {notificationData.unreadChatCount > 0 && (
-                    <span className="absolute -top-2 -right-6 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] shadow-lg">
-                      {notificationData.unreadChatCount > 99 ? '99+' : notificationData.unreadChatCount}
-                    </span>
-                  )}
-                </span>
+                <span className="text-orange-300 font-medium">Mesajlar</span>
               </Link>
               <Link href="/profile" className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
                 <Award className="h-5 w-5 text-orange-400" />
                 <span className="text-orange-300 font-medium">Profil</span>
               </Link>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/teams/incoming-requests" className="relative flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
-                <MessageCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-orange-300 font-medium">Gelen İstekler</span>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden flex items-center space-x-2 overflow-x-auto">
+              <Link href="/matches" className="flex items-center space-x-1 px-2 py-1.5 rounded-lg hover:bg-orange-500/10 transition-colors whitespace-nowrap">
+                <Users className="h-4 w-4 text-orange-400" />
+                <span className="text-orange-300 font-medium text-sm">İlanlar</span>
+              </Link>
+              <Link href="/chat" className="flex items-center space-x-1 px-2 py-1.5 rounded-lg hover:bg-orange-500/10 transition-colors whitespace-nowrap">
+                <MessageCircle className="h-4 w-4 text-orange-400" />
+                <span className="text-orange-300 font-medium text-sm">Mesajlar</span>
+              </Link>
+              <Link href="/profile" className="flex items-center space-x-1 px-2 py-1.5 rounded-lg hover:bg-orange-500/10 transition-colors whitespace-nowrap">
+                <Award className="h-4 w-4 text-orange-400" />
+                <span className="text-orange-300 font-medium text-sm">Profil</span>
+              </Link>
+            </div>
+
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/teams/incoming-requests" className="relative flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-orange-500/10 transition-colors">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
+                <span className="text-orange-300 font-medium text-sm sm:text-base hidden sm:inline">Gelen İstekler</span>
+                <span className="text-orange-300 font-medium text-sm sm:hidden">İstekler</span>
                 {incomingRequests.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                  <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 flex items-center justify-center">
                     {incomingRequests.length}
                   </Badge>
                 )}
@@ -539,44 +530,43 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Overview */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
             <Card className="border border-orange-500/30 shadow-lg bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-300 mb-2">0</div>
-                  <div className="text-sm text-gray-400">Toplam Maç</div>
-                  <div className="w-8 h-1 bg-orange-500 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-xl sm:text-3xl font-bold text-orange-300 mb-1 sm:mb-2">0</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Toplam Maç</div>
+                  <div className="w-6 sm:w-8 h-0.5 sm:h-1 bg-orange-500 mx-auto mt-1 sm:mt-2 rounded-full"></div>
                 </div>
               </CardContent>
             </Card>
             <Card className="border border-orange-500/30 shadow-lg bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-200 mb-2">{session.user.rating}</div>
-                  <div className="text-sm text-gray-400">Rating</div>
-                  <div className="w-8 h-1 bg-orange-400 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-xl sm:text-3xl font-bold text-orange-200 mb-1 sm:mb-2">{session.user.rating}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Rating</div>
+                  <div className="w-6 sm:w-8 h-0.5 sm:h-1 bg-orange-400 mx-auto mt-1 sm:mt-2 rounded-full"></div>
                 </div>
               </CardContent>
             </Card>
             <Card className="border border-orange-500/30 shadow-lg bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm">
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-300 mb-2">0</div>
-                  <div className="text-sm text-gray-400">Bu Ay</div>
-                  <div className="w-8 h-1 bg-orange-500 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-xl sm:text-3xl font-bold text-orange-300 mb-1 sm:mb-2">0</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Bu Ay</div>
+                  <div className="w-6 sm:w-8 h-0.5 sm:h-1 bg-orange-500 mx-auto mt-1 sm:mt-2 rounded-full"></div>
                 </div>
               </CardContent>
             </Card>
-            <Link href="/matches/create">
-              <Card className="border border-orange-500/30 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 backdrop-blur-sm cursor-pointer hover:shadow-xl hover:shadow-orange-500/30 transition-all group">
-                <CardContent className="p-6">
+            <Link href="/matches/create" className="col-span-2 sm:col-span-1">
+              <Card className="border border-orange-500/30 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 backdrop-blur-sm cursor-pointer hover:shadow-xl hover:shadow-orange-500/30 transition-all group h-full">
+                <CardContent className="p-3 sm:p-6 h-full flex items-center justify-center">
                   <div className="text-center">
-                    <Plus className="h-8 w-8 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                    <div className="text-white font-semibold">Maç İlanı Ver</div>
+                    <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+                    <div className="text-white font-semibold text-sm sm:text-base">Maç İlanı Ver</div>
                   </div>
                 </CardContent>
               </Card>
@@ -585,32 +575,32 @@ export default function DashboardPage() {
         </div>
 
         {/* Team Search Section */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Team Search */}
             <div className="lg:col-span-2">
               <Card className="border border-orange-500/30 shadow-2xl bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm h-full">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-12 w-12 bg-orange-500/20 rounded-2xl flex items-center justify-center border border-orange-500/40">
-                      <Search className="h-6 w-6 text-orange-400" />
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="h-8 w-8 sm:h-12 sm:w-12 bg-orange-500/20 rounded-xl sm:rounded-2xl flex items-center justify-center border border-orange-500/40">
+                      <Search className="h-4 w-4 sm:h-6 sm:w-6 text-orange-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-2xl text-orange-300">Takım Ara</CardTitle>
-                      <CardDescription className="text-gray-400">Maç yapmak için takım bulun</CardDescription>
+                      <CardTitle className="text-lg sm:text-2xl text-orange-300">Takım Ara</CardTitle>
+                      <CardDescription className="text-gray-400 text-sm">Maç yapmak için takım bulun</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
+                <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Search Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                       <div>
                         <label className="block text-sm font-medium text-orange-300 mb-2">Şehir</label>
-                        <select 
+                        <select
                           value={searchFilters.city}
                           onChange={(e) => handleFilterChange("city", e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none">
+                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none text-sm">
                           <option value="">Tümü</option>
                           <option value="İstanbul">İstanbul</option>
                           <option value="Ankara">Ankara</option>
@@ -621,10 +611,10 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-orange-300 mb-2">Spor</label>
-                        <select 
+                        <select
                           value={searchFilters.sport}
                           onChange={(e) => handleFilterChange("sport", e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none">
+                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none text-sm">
                           <option value="">Tümü</option>
                           <option value="FUTBOL">Futbol</option>
                           <option value="BASKETBOL">Basketbol</option>
@@ -634,10 +624,10 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-orange-300 mb-2">Rating</label>
-                        <select 
+                        <select
                           value={searchFilters.rating}
                           onChange={(e) => handleFilterChange("rating", e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none">
+                          className="w-full px-3 py-2 bg-gray-800 border border-orange-500/30 rounded-lg text-orange-200 focus:border-orange-500/50 focus:outline-none text-sm">
                           <option value="">Tümü</option>
                           <option value="80-100">80-100</option>
                           <option value="60-79">60-79</option>
@@ -648,78 +638,80 @@ export default function DashboardPage() {
                     </div>
                     
                     {/* Search Results */}
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-4 max-h-80 sm:max-h-96 overflow-y-auto">
                       {isLoadingTeams ? (
-                        <div className="text-center py-8">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                          <div className="text-orange-300">Takımlar yükleniyor...</div>
+                        <div className="text-center py-6 sm:py-8">
+                          <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
+                          <div className="text-orange-300 text-sm sm:text-base">Takımlar yükleniyor...</div>
                         </div>
                       ) : teams.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Search className="h-12 w-12 mx-auto mb-3 text-orange-400/50" />
+                        <div className="text-center py-6 sm:py-8">
+                          <Search className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 text-orange-400/50" />
                           <p className="font-medium text-orange-300/80 text-sm">Takım bulunamadı</p>
                           <p className="text-xs text-gray-500">Farklı filtreler deneyin</p>
                         </div>
                       ) : (
-                        (Array.isArray(teams) ? teams : []).map((team) => {
-                          // Bu takıma daha önce istek gönderilmiş mi kontrol et
-                          const sentRequest = sentRequests.find(req => req.receiver.id === team.id)
-                          
-                          return (
-                            <div key={team.id} className="border border-orange-500/20 rounded-xl p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 hover:from-gray-800/70 hover:to-gray-900/70 transition-all">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3 flex-1 cursor-pointer" onClick={() => router.push(`/teams/${team.id}`)}>
-                                  <Avatar className="h-12 w-12 border-2 border-orange-500/40 ring-1 ring-orange-500/20">
-                                    <AvatarImage 
-                                      src={team.logo || ''} 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          {(Array.isArray(teams) ? teams : []).map((team) => {
+                            // Bu takıma daha önce istek gönderilmiş mi kontrol et
+                            const sentRequest = sentRequests.find(req => req.receiver.id === team.id)
+                            return (
+                              <div key={team.id} className="border border-orange-500/20 rounded-xl p-3 sm:p-4 bg-gradient-to-br from-gray-800/60 to-gray-900/60 hover:from-orange-900/40 hover:to-gray-900/80 transition-all shadow-md hover:shadow-orange-400/20 flex flex-col h-full min-h-[160px] sm:min-h-[180px]">
+                                <div className="flex items-center gap-2 sm:gap-3 flex-1 cursor-pointer" onClick={() => router.push(`/teams/${team.id}`)}>
+                                  <Avatar className="h-10 w-10 sm:h-14 sm:w-14 border-2 border-orange-500/40 ring-2 ring-orange-500/20 shadow-md flex-shrink-0">
+                                    <AvatarImage
+                                      src={team.logo || ''}
                                       alt={`${team.teamName} logo`}
                                       className="object-cover w-full h-full rounded-full"
                                       style={{ objectPosition: 'center' }}
                                     />
-                                    <AvatarFallback className="bg-orange-500/20 text-orange-300 font-bold">
+                                    <AvatarFallback className="bg-orange-500/20 text-orange-300 font-bold text-sm sm:text-base">
                                       {getSportIcon(team.sport)}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <h4 className="font-bold text-orange-200 hover:text-orange-100 transition-colors">{team.teamName}</h4>
+                                  <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                      <h4 className="font-bold text-orange-200 hover:text-orange-100 transition-colors text-sm sm:text-lg truncate">{team.teamName}</h4>
                                       {team.isPro && (
-                                        <CheckCircle className="h-4 w-4 text-blue-400" />
+                                        <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
                                       )}
                                     </div>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-400">
-                                      <span>{getSportIcon(team.sport)} {team.sport}</span>
-                                      <span>📍 {team.city}</span>
-                                      <Badge className={getRatingBadgeColor(team.rating)}>
-                                        <Star className="h-3 w-3 mr-1" />
+                                    <div className="flex items-center flex-wrap gap-1 sm:gap-2 text-xs sm:text-sm text-gray-400">
+                                      <span className="truncate">{getSportIcon(team.sport)} {team.sport}</span>
+                                      <span className="truncate">📍 {team.city}</span>
+                                      <Badge className={`${getRatingBadgeColor(team.rating)} text-xs`}>
+                                        <Star className="h-2 w-2 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                                         {team.rating}
                                       </Badge>
                                     </div>
                                   </div>
                                 </div>
-                                
-                                {sentRequest ? (
-                                  <Button 
-                                    variant="outline"
-                                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500"
-                                    onClick={() => handleCancelRequest(sentRequest.id, team.teamName)}
-                                    disabled={loadingActions.has(sentRequest.id)}
-                                  >
-                                    {loadingActions.has(sentRequest.id) ? "İptal Ediliyor..." : "İstek İptal Et"}
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    className="bg-orange-500 hover:bg-orange-600 text-white"
-                                    onClick={() => handleSendRequest(team.id, team.teamName)}
-                                    disabled={loadingActions.has(team.id)}
-                                  >
-                                    {loadingActions.has(team.id) ? "Gönderiliyor..." : "İstek Gönder"}
-                                  </Button>
-                                )}
+                                <div className="mt-3 sm:mt-4 flex justify-end">
+                                  {sentRequest ? (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 w-full text-xs sm:text-sm"
+                                      onClick={() => handleCancelRequest(sentRequest.id, team.teamName)}
+                                      disabled={loadingActions.has(sentRequest.id)}
+                                    >
+                                      {loadingActions.has(sentRequest.id) ? "İptal Ediliyor..." : "İstek İptal Et"}
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      className="bg-orange-500 hover:bg-orange-600 text-white w-full text-xs sm:text-sm"
+                                      onClick={() => handleSendRequest(team.id, team.teamName)}
+                                      disabled={loadingActions.has(team.id)}
+                                    >
+                                      {loadingActions.has(team.id) ? "Gönderiliyor..." : "İstek Gönder"}
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )
-                        })
+                            )
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -730,39 +722,39 @@ export default function DashboardPage() {
             {/* Activity Sidebar */}
             <div>
               <Card className="border border-orange-500/30 shadow-2xl bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm h-full">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
                   <div className="flex items-center space-x-2">
-                    <div className="h-10 w-10 bg-orange-500/20 rounded-xl flex items-center justify-center border border-orange-500/40">
-                      <Activity className="h-5 w-5 text-orange-400" />
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 bg-orange-500/20 rounded-xl flex items-center justify-center border border-orange-500/40">
+                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl text-orange-300">Son Aktiviteler</CardTitle>
-                      <CardDescription className="text-gray-400">Son hareketler</CardDescription>
+                      <CardTitle className="text-lg sm:text-xl text-orange-300">Son Aktiviteler</CardTitle>
+                      <CardDescription className="text-gray-400 text-sm">Son hareketler</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="space-y-3 sm:space-y-4">
                     {isLoadingActivities ? (
                       <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-orange-500 mx-auto mb-2"></div>
                         <div className="text-xs text-gray-400">Yükleniyor...</div>
                       </div>
                     ) : activities.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Zap className="h-10 w-10 mx-auto mb-3 text-orange-400/50" />
+                      <div className="text-center py-6 sm:py-8">
+                        <Zap className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 sm:mb-3 text-orange-400/50" />
                         <p className="font-medium text-orange-300/80 text-sm">Henüz aktivite yok</p>
                         <p className="text-xs text-gray-500">İlk ilanını ver!</p>
                       </div>
                     ) : (
-                      <div className="space-y-3 max-h-80 overflow-y-auto">
+                      <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
                         {activities.map((activity) => (
-                          <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg border border-orange-500/20">
-                            <div className={`h-8 w-8 ${getActivityColor(activity.type)} rounded-full flex items-center justify-center`}>
+                          <div key={activity.id} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gray-800/30 rounded-lg border border-orange-500/20">
+                            <div className={`h-6 w-6 sm:h-8 sm:w-8 ${getActivityColor(activity.type)} rounded-full flex items-center justify-center flex-shrink-0`}>
                               {getActivityIcon(activity.type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-orange-200 truncate">{activity.title}</p>
+                              <p className="text-xs sm:text-sm font-medium text-orange-200 truncate">{activity.title}</p>
                               <p className="text-xs text-gray-400 truncate">{activity.description}</p>
                               <p className="text-xs text-gray-500">{formatDate(activity.createdAt)}</p>
                             </div>
@@ -776,7 +768,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
       </main>
     </div>
   )
