@@ -59,11 +59,11 @@ export async function GET() {
     })
 
     // Tüm eşleşmeleri olduğu gibi dön
-        return NextResponse.json(matches.map(match => ({
-            ...match,
-            team1Name: match.team1.teamName,
-            team2Name: match.team2.teamName
-        })))
+    return NextResponse.json(matches.map(match => ({
+      ...match,
+      team1Name: match.team1?.teamName || 'Bilinmeyen Takım',
+      team2Name: match.team2?.teamName || 'Bilinmeyen Takım'
+    })))
   } catch (error) {
     console.error("Get match history error:", error)
     return NextResponse.json(
