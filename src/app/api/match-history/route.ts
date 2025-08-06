@@ -32,6 +32,8 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
+    console.log('🔍 Session:', session?.user?.id) // Debug
+    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Giriş yapmanız gerekiyor" },
@@ -39,7 +41,8 @@ export async function GET() {
       )
     }
 
-    // Kullanıcının dahil olduğu tüm eşleşmeleri getir (her iki takım, tarih, lokasyon dahil)
+    console.log('🔍 Fetching matches for user:', session.user.id) // Debug
+
     const matches = await prisma.matchHistory.findMany({
       where: {
         OR: [
@@ -58,12 +61,19 @@ export async function GET() {
       orderBy: { date: 'desc' }
     })
 
-    // Tüm eşleşmeleri olduğu gibi dön
-    return NextResponse.json(matches.map(match => ({
+    console.log('🔍 Raw matches from DB:', matches) // Debug
+    console.log('🔍 First match team1:', matches[0]?.team1) // Debug
+    console.log('🔍 First match team2:', matches[0]?.team2) // Debug
+
+    const result = matches.map(match => ({
       ...match,
-      team1Name: match.team1?.teamName || 'Bilinmeyen Takım.',
+      team1Name: match.team1?.teamName || 'Bilinmeyen Takım',
       team2Name: match.team2?.teamName || 'Bilinmeyen Takım'
-    })))
+    }))
+
+    console.log('🔍 Processed result:', result) // Debug
+    
+    return NextResponse.json(result)
   } catch (error) {
     console.error("Get match history error:", error)
     return NextResponse.json(

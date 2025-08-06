@@ -48,17 +48,15 @@ export default function ChatPage() {
   // Production'da polling için interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Kullanıcıları ve mesajları yükle
+  // ✅ RefreshData'yı sadece mesajlar için kullan
   const refreshData = useCallback(async () => {
     if (!session?.user?.id) return
+    
     try {
-      await refreshNotifications()
-      const usersResponse = await fetch('/api/match-history')
-      if (usersResponse.ok) {
-        const userData = await usersResponse.json()
-        setUsers(userData)
-      }
+      // KULLANICI LİSTESİNİ YENİDEN YÜKLEME!
+      // Sadece seçili kullanıcının mesajlarını güncelle
       if (selectedUser) {
+        console.log('🟡 [DEBUG] Refreshing messages for:', selectedUser.teamName)
         const messagesResponse = await fetch(`/api/messages?otherUserId=${selectedUser.id}`)
         if (messagesResponse.ok) {
           const messageData = await messagesResponse.json()
@@ -67,46 +65,57 @@ export default function ChatPage() {
         }
       }
     } catch (error) {
-      console.error('Data refresh error:', error)
+      console.error('🔴 [ERROR] refreshData:', error)
     }
-  }, [session?.user?.id, selectedUser, refreshNotifications])
+  }, [session?.user?.id, selectedUser])
 
-  // Kullanıcıları yükle
+  // ✅ Kullanıcıları yükle - Sadece bir kez
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await fetch('/api/match-history')
         if (response.ok) {
           const data = await response.json()
-          // Her eşleşmede, diğer takımı user olarak göster
+          
+          // ✅ Debug: API'den gelen veriyi kontrol et
+          console.log('🔵 [DEBUG] Match History API Response:', data)
+          
           const myId = session?.user?.id
           const usersList = data
             .map((match: any) => {
-              // Kullanıcı kendi takımını değil, karşı takımı görecek
-              if (match.team1Id === myId) {
-                return {
-                  id: match.team2Id,
-                  teamName: match.team2Name,
-                  city: match.team2?.city || '',
-                  sport: match.team2?.sport || '',
-                }
-              } else {
-                return {
-                  id: match.team1Id,
-                  teamName: match.team1Name,
-                  city: match.team1?.city || '',
-                  sport: match.team1?.sport || '',
-                }
-              }
+              const otherUser = match.team1Id === myId 
+                ? {
+                    id: match.team2Id,
+                    teamName: match.team2Name || match.team2?.teamName || 'Bilinmeyen Takım',
+                    city: match.team2?.city || '',
+                    sport: match.team2?.sport || '',
+                  }
+                : {
+                    id: match.team1Id,
+                    teamName: match.team1Name || match.team1?.teamName || 'Bilinmeyen Takım', 
+                    city: match.team1?.city || '',
+                    sport: match.team1?.sport || '',
+                  }
+              
+              // ✅ Her user'ın ID'sini kontrol et
+              console.log('🔵 [DEBUG] Created user:', otherUser)
+              
+              return otherUser
             })
-            // Aynı takım birden fazla eşleşmede olabilir, uniq yap
-            .filter((user: any, index: number, arr: any[]) =>
-              arr.findIndex(u => u.id === user.id) === index
-            )
+            .filter((user: any, index: number, arr: any[]) => {
+              // ✅ ID'si undefined/null olan kullanıcıları filtrele
+              if (!user.id) {
+                console.warn('⚠️ [WARNING] User with empty ID filtered out:', user)
+                return false
+              }
+              return arr.findIndex(u => u.id === user.id) === index
+            })
+          
+          console.log('🔵 [DEBUG] Final users list:', usersList)
           setUsers(usersList)
         }
       } catch (error) {
-        console.error('Eşleşmiş takımlar yüklenemedi:', error)
+        console.error('🔴 [ERROR] fetchUsers:', error)
       } finally {
         setIsLoading(false)
       }
@@ -119,11 +128,17 @@ export default function ChatPage() {
 
     if (session?.user?.id) {
       fetchUsers()
-      // Production'da polling başlat
+      
+      // ✅ SADECE BİLDİRİMLERİ GÜNCELLE - Kullanıcı listesini sürekli yenileme!
       if (process.env.NODE_ENV === 'production') {
-        pollingIntervalRef.current = setInterval(() => {
-          refreshData()
-        }, 2000) // 2 saniyede bir yenile (daha hızlı)
+        pollingIntervalRef.current = setInterval(async () => {
+          try {
+            await refreshNotifications()
+            console.log('🟡 [POLLING] Notifications refreshed')
+          } catch (error) {
+            console.error('🔴 [POLLING ERROR]:', error)
+          }
+        }, 5000) // 5 saniyede bir sadece bildirimler
       }
     }
 
@@ -133,9 +148,7 @@ export default function ChatPage() {
         clearInterval(pollingIntervalRef.current)
       }
     }
-  }, [session, selectedUser]) // selectedUser'ı dependency'e ekledim
-
-  // Socket listeners kaldırıldı, sadece polling ile güncellenecek
+  }, [session]) // ✅ selectedUser'ı dependency'den kaldırdım
 
   // Kullanıcı seçildiğinde mesajları yükle
   useEffect(() => {
@@ -201,8 +214,26 @@ export default function ChatPage() {
     }
   }
 
+  // ✅ Mesaj gönderme fonksiyonunu güvenli hale getir
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedUser || !session?.user?.id) return
+    if (!newMessage.trim() || !selectedUser || !session?.user?.id) {
+      console.warn('⚠️ [WARNING] Message send blocked - missing data')
+      return
+    }
+
+    // ✅ ID kontrolü ekle
+    if (!selectedUser.id) {
+      console.error('🔴 [ERROR] Selected user has no ID:', selectedUser)
+      toast.error('Geçersiz kullanıcı seçimi')
+      return
+    }
+
+    console.log('🔵 [DEBUG] Sending message to:', {
+      receiverId: selectedUser.id,
+      receiverName: selectedUser.teamName,
+      senderId: session.user.id,
+      senderName: session.user.teamName
+    })
 
     const messageData = {
       content: newMessage.trim(),
@@ -221,16 +252,15 @@ export default function ChatPage() {
         const newMsg = await response.json()
         setMessages(prev => [...prev, newMsg])
         setNewMessage('')
-        
-        // Mesaj gönderildi, polling ile otomatik güncellenecek
-        // console.log('📤 Mesaj gönderildi:', newMsg)
-        
         scrollToBottom()
+        console.log('✅ [SUCCESS] Message sent successfully')
       } else {
-        toast.error('Mesaj gönderilemedi')
+        const errorData = await response.json()
+        console.error('🔴 [ERROR] Message send failed:', errorData)
+        toast.error(`Mesaj gönderilemedi: ${errorData.error}`)
       }
     } catch (error) {
-      console.error('Mesaj gönderme hatası:', error)
+      console.error('🔴 [ERROR] Message send error:', error)
       toast.error('Bağlantı hatası')
     }
   }
